@@ -17,28 +17,14 @@ let currentlyUsed = options.ips[0];
 
 const fn = async () => {
     for (let i = 0; i<ipAddresses.length; i++) {
+        let data = {}
         try {
 
             if(i !== ipAddresses.length -1) {
               const response = await fetch(`http://${ipAddresses[i]}:9933/health`);
-              const data = await response.json();
+              data = await response.json();
               if (data.isSyncing !== false) {
-                try {let telegram_group_id = options?.telegram_group_id;
-                let telegram_bot_token = options?.telegram_bot_token;
-                if(telegram_group_id && telegram_bot_token){
-                   exec(
-                     `curl --data chat_id="${telegram_group_id}" --data-urlencode "text=Subtensor (${ipAddresses[i]}) currently seems to be ${data.isSyncing ? "syncing": "not available"}" https://api.telegram.org/bot${telegram_bot_token}/sendMessage`,
-                     (err, stout, stderr) => {
-                       if (err) {
-                         console.log(err);
-                       }
-                       // console.log({stout})
-                     }
-                   );
-                }
-               }catch(e) {
-
-                }
+                
                   throw new Error("Cannot connect to "+ ipAddresses[i])
 
               }
@@ -61,6 +47,25 @@ const fn = async () => {
             currentlyUsed = ipAddresses[i];
             return;
         } catch (e) {
+          try {
+            let telegram_group_id = options?.telegram_group_id;
+            let telegram_bot_token = options?.telegram_bot_token;
+            if (telegram_group_id && telegram_bot_token) {
+              exec(
+                `curl --data chat_id="${telegram_group_id}" --data-urlencode "text=Subtensor (${
+                  ipAddresses[i]
+                }) currently seems to be ${
+                  data.isSyncing ? "syncing" : "not available"
+                }" https://api.telegram.org/bot${telegram_bot_token}/sendMessage`,
+                (err, stout, stderr) => {
+                  if (err) {
+                    console.log(err);
+                  }
+                  // console.log({stout})
+                }
+              );
+            }
+          } catch (e) {}
             console.log(e)
         }
     }
