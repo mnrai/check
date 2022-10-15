@@ -3,7 +3,9 @@ var fetch = require("node-fetch");
 const commandLineArgs = require("command-line-args");
 const { exec } = require("child_process");
 const optionDefinitions = [
-  { name: "ips", alias: "p", type:String, multiple:true  },
+  { name: "ips", alias: "p", type: String, multiple: true },
+  { name: "telegram_group_id", type: String },
+  { name: "telegram_bot_token", type: String },
 ];
 
 const options = commandLineArgs(optionDefinitions);
@@ -21,7 +23,24 @@ const fn = async () => {
               const response = await fetch(`http://${ipAddresses[i]}:9933/health`);
               const data = await response.json();
               if (data.isSyncing !== false) {
+                try {let telegram_group_id = options?.telegram_group_id;
+                let telegram_bot_token = options?.telegram_bot_token;
+                if(telegram_group_id && telegram_bot_token){
+                   exec(
+                     `curl --data chat_id="${telegram_group_id}" --data-urlencode "text=Subtensor (${ipAddresses[i]}) currently seems to be ${data.isSyncing ? "syncing": "not available"}" https://api.telegram.org/bot${telegram_bot_token}/sendMessage`,
+                     (err, stout, stderr) => {
+                       if (err) {
+                         console.log(err);
+                       }
+                       // console.log({stout})
+                     }
+                   );
+                }
+               }catch(e) {
+
+                }
                   throw new Error("Cannot connect to "+ ipAddresses[i])
+
               }
             }
     
