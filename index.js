@@ -7,7 +7,10 @@ const optionDefinitions = [
 ];
 
 const options = commandLineArgs(optionDefinitions);
-const ipAddresses = [...options.ips, "staging.nobunaga.opentensor.ai"];
+const ipAddresses = [
+  ...options.ips,
+  "AtreusLB-2c6154f73e6429a9.elb.us-east-2.amazonaws.com",
+];
 let currentlyUsed = options.ips[0];
 const fn = async () => {
     for (let i = 0; i<ipAddresses.length; i++) {
